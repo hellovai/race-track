@@ -1,0 +1,10 @@
+The goal of this game is to move the car from S to F. "." are valid road spaces. Every move is -1. Going off road is -5, and you will ricochet off on the road depending on how you hit the road.
+
+in the main directory run:
+	g++ game/main.cpp game.cpp -o race
+
+usage
+	./race <race-name>
+
+default is "race.dat" file
+create a track based on that file

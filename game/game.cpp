@@ -55,6 +55,7 @@ void Game::Print() {
 		}
 		cout<<endl;
 	}
+    cout<<"Score: "<<reward<<endl;
 	cout<<"Up: "<<uVel<<" ::: Right: "<<rVel<<endl;
 }
 
