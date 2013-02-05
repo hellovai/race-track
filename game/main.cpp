@@ -22,11 +22,12 @@ int main(int argc, char* argv[]) {
 	while(game.Status()) {
         system("clear");
 		game.Print();
-		cout<<"Up Velocity: ";
-		cin>>up_vel;
-		cout<<"Right Velocity: ";
-		cin>>right_vel;
-		game.Move(up_vel, right_vel);
+//		cout<<"Up Velocity: ";
+//		cin>>up_vel;
+//		cout<<"Right Velocity: ";
+//		cin>>right_vel;
+		game.Move(0, 0);
+		sleep(1);
 	}
 	cout<<"Congrats! Score: "<<game.Reward()<<endl;
 	return 0;

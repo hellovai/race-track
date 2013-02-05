@@ -16,7 +16,7 @@ using namespace std;
 typedef struct {
 	int x;
 	int y;
-}Coor;
+} Coor;
 
 class Game {
 	int **track;
@@ -37,14 +37,17 @@ class Game {
 	char gui(int x);
 	int fromGUI(char x);
 	int processMove();
-
+	bool fixCrash(int uMove, int rMove);
+	
 	public:
 		Game(string name);
 		int Move(int up, int right);
 		void Print();
 		void Reset();
-		bool Status();
-		int Reward();
+		bool checkFinish();
+		bool Status() { return status; };
+		int Reward() { return reward; };
+		Coor Position() { return coor; }
 };
 
 //=================================

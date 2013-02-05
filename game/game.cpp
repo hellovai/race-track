@@ -9,6 +9,9 @@
 
 #include "game.h"
 
+#define VELMAX 5
+#define VELMIN 0
+
 using namespace std;
 
 Game::Game( string filename ) {
@@ -25,7 +28,7 @@ Game::Game( string filename ) {
 			getline(fin, temp);
 			for( int j=0; j<height; j++) {
 				track[i][j] = fromGUI(temp[j]);
-				if(track[i][j] == 1) {
+				if(track[i][j] == -1) {
 					Coor temp;
 					temp.x = i;
 					temp.y = j;
@@ -62,24 +65,108 @@ void Game::Print() {
 int Game::Move(int up, int right) {
 	uVel += up;
 	rVel += right;
+	
+	//Make Sure it is within bounds (-5:+5)
+	uVel = min(VELMAX, uVel);
+	rVel = min(VELMAX, rVel);
+	uVel = max(VELMIN, uVel);
+	rVel = max(VELMIN, rVel);
+	
+	
 	int res = processMove();
 	//always lose 1 for making a move
 	reward -= 1;
-	//lose additional 5 for crashing
-	if(res == -5)
-		reward += res;
 	
-	if(res == 2)
+	//lose additional 4 for crashing
+	if(res == -5)
+		reward += -4;
+	
+	if(res == -2)
 		status = false;
-	cout<<"Move Result: "<<res<<endl;
 	return res;
 }
 
+//Private Functions........................................
+
 int Game::processMove() {
-	coor.y += rVel;
-	coor.x -= uVel;
+	bool crash = false, crashed=false;
 	
+	//Car always moves 1
+	//initially test if it can move up 
+	coor.x -= 1;
+	crash = fixCrash(1, 0);
+	//if move failed, move right
+	if(crash) {
+		coor.y +=1;
+		crash = fixCrash(0, 1);
+	}
+	//else move left
+	if(crash) {
+		coor.y -=1;
+		crash = fixCrash(0, -1);
+	}
+	
+	int tempU = uVel, tempR = rVel;
+	while(tempU != 0 && tempR != 0 && track[coor.x][coor.y] != -2 ) {
+		coor.x -= (tempU != 0 ? tempU/abs(tempU) : 0);
+		coor.y += (tempR != 0 ? tempR/abs(tempR) : 0);
+		crash = fixCrash((tempU != 0 ? tempU/abs(tempU) : 0), (tempR != 0 ? tempR/abs(tempR) : 0));
+		if(crash && !crashed)
+			crashed = true;
+		
+		//move velocity towards 0
+		if(tempU > 0 ) 
+			tempU--;
+		else if (tempU < 0)
+			tempU++;
+		if(tempR > 0 ) 
+			tempR--;
+		else if (tempR < 0)
+			tempR++;
+	}
+		
+	
+	//This means we got the end
+	if(track[coor.x][coor.y] == -2)
+		crashed = false;
+	
+	if(crashed)
+		return -5;
+	
+	return track[coor.x][coor.y];
+}
+
+char Game::gui(int x) {
+	switch(x) {
+		case 0:
+			return '.';
+		case -1:
+			return 'S';
+		case -2:
+			return 'F';
+		case -5:
+		default:
+			return '|';
+	}
+}
+
+int Game::fromGUI(char x) {
+	switch (x) {
+		case '.':
+			return 0;
+		case 'S':
+			return -1;
+		case 'F':
+			return -2;
+		case '|':
+		default:
+			return -5;
+	}
+}
+
+bool Game::fixCrash(int uMove, int rMove) {
 	bool crash = false;
+	//boundary checks to make sure we can access the index in the track
 	if(coor.x < 0) {
 		coor.x = 0;
 		crash = true;
@@ -94,69 +181,31 @@ int Game::processMove() {
 		coor.y = height - 1;
 		crash = true;
 	}
-	
-	//bring it back on the road if it drove off
 	if(track[coor.x][coor.y] == -5) {
-		int tempx = coor.x, tempy = coor.y;
-		if(uVel > 0)
-			while(track[tempx][tempy] == -5)
-				tempx++;
-		if(uVel < 0)
-			while(track[tempx][tempy] == -5)
-				tempx--;
-		if(rVel > 0)
-			while(track[tempx][tempy] == -5)
-				tempy--;
-		if(rVel < 0)
-			while(track[tempx][tempy] == -5)
-				tempy++;
-		coor.x = tempx;
-		coor.y = tempy;
+		if(uMove > 0) {
+			coor.x++;
+			//check that we are indeed back on the track
+			if(track[coor.x][coor.y] == -5 && rMove != 0)
+				coor.x--;
+		} else if (uMove < 0) {
+			coor.x--;
+			//check that we are indeed back on the track
+			if(track[coor.x][coor.y] == -5 && rMove != 0)
+				coor.x++;
+		}
+		if(rMove > 0) {
+			coor.y--;
+			//check that we are indeed back on the track
+			if(track[coor.x][coor.y] == -5 && uMove != 0)
+				coor.y++;
+		} else if ( rMove < 0 ) {
+			coor.y++;
+			//check that we are indeed back on the track
+			if(track[coor.x][coor.y] == -5 && uMove != 0)
+				coor.y--;
+		}
 		crash = true;
 	}
 	
-	//This means we got the end
-	if(track[coor.x][coor.y] == 2)
-		crash = false;
-	
-	if(crash)
-		return -5;
-	
-	return track[coor.x][coor.y];
-}
-
-bool Game::Status() {
-	return status;
-}
-
-int Game::Reward() {
-	return reward;
-}
-
-char Game::gui(int x) {
-	switch(x) {
-		case 0:
-			return '.';
-		case 1:
-			return 'S';
-		case 2:
-			return 'F';
-		case -5:
-		default:
-			return '|';
-	}
-}
-
-int Game::fromGUI(char x) {
-	switch (x) {
-		case '.':
-			return 0;
-		case 'S':
-			return 1;
-		case 'F':
-			return 2;
-		case '|':
-		default:
-			return -5;
-	}
+	return crash;
 }
