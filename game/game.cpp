@@ -207,6 +207,12 @@ bool Game::fixCrash(int uMove, int rMove) {
 		}
 		crash = true;
 	}
+	//this means we moved diagonally 
+	if(track[coor.x][coor.y] == -5) {
+		coor.x -= -1*uMove;
+		coor.y += -1*rMove;
+	}
+	
 	
 	return crash;
 }
