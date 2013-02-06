@@ -7,10 +7,8 @@
 #include <string>
 #include <algorithm>
 
+#include "main.h"
 #include "game.h"
-
-#define VELMAX 5
-#define VELMIN -5
 
 using namespace std;
 
@@ -64,6 +62,7 @@ void Game::Print() {
 }
 
 int Game::Move(int up, int right) {
+	
 	uVel += up;
 	rVel += right;
 	
@@ -73,17 +72,27 @@ int Game::Move(int up, int right) {
 	uVel = max(VELMIN, uVel);
 	rVel = max(VELMIN, rVel);
 	
+	Identity item;
+	item.coor = coor;
+	item.vel.up = uVel;
+	item.vel.right = rVel;
 	
 	int res = processMove();
 	//always lose 1 for making a move
 	reward -= 1;
 	
+	item.reward = -1;
+	
 	//lose additional 4 for crashing
-	if(res == -5)
-		reward += -4;
+	if(res == -5) {
+		reward -= 4;
+		item.reward -= 4;
+	}
 	
 	if(res == -2)
 		status = false;
+	
+	moveList.push_back(item);
 	return res;
 }
 
