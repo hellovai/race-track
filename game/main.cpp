@@ -20,7 +20,9 @@ int main(int argc, char* argv[]) {
 	cout<<"Initialized!"<<endl;
 	int up_vel, right_vel;
 	while(game.Status()) {
-        system("clear");
+        game.Print();
+        sleep(1);
+        game.halfmove();
 		game.Print();
 		cout<<"Up Velocity: ";
 		cin>>up_vel;
@@ -28,6 +30,7 @@ int main(int argc, char* argv[]) {
 		cin>>right_vel;
 		game.Move(up_vel, right_vel);
 	}
+    game.Print();
 	cout<<"Congrats! Score: "<<game.Reward()<<endl;
 	return 0;
 }

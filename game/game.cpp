@@ -10,7 +10,7 @@
 #include "game.h"
 
 #define VELMAX 5
-#define VELMIN 0
+#define VELMIN -5
 
 using namespace std;
 
@@ -52,6 +52,8 @@ void Game::Reset() {
 }
 
 void Game::Print() {
+    
+    system("clear");
 	for(int i=0; i<width; i++) {
 		for( int j=0; j<height; j++) {
 			cout<<((coor.x == i && coor.y == j) ? 'C' : gui(track[i][j]));
@@ -93,9 +95,11 @@ int Game::processMove() {
 	
 	int tempU = uVel, tempR = rVel;
 	while((tempU != 0 || tempR != 0) && track[coor.x][coor.y] != -2 ) {
-		coor.x -= (tempU != 0 ? tempU/abs(tempU) : 0);
-		coor.y += (tempR != 0 ? tempR/abs(tempR) : 0);
-		crash = fixCrash((tempU != 0 ? tempU/abs(tempU) : 0), (tempR != 0 ? tempR/abs(tempR) : 0));
+        int upward = (tempU != 0 ? tempU/abs(tempU) : 0);
+        int rightward = (tempR != 0 ? tempR/abs(tempR) : 0);
+		coor.x -= upward;
+		coor.y += rightward;
+		crash = fixCrash(upward, rightward);
 		if(crash && !crashed)
 			crashed = true;
 		
@@ -108,33 +112,38 @@ int Game::processMove() {
 			tempR--;
 		else if (tempR < 0)
 			tempR++;
+        Print();
+        cout<<"Moves: up->"<<upward<<" right->"<<rightward<<" location: "<<track[coor.x][coor.y]<<endl;
+        sleep(1);
 	}
 		
 	
 	//This means we got the end
 	if(track[coor.x][coor.y] == -2)
 		crashed = false;
-	else {
-		//Car always moves 1
-		//initially test if it can move up 
-		coor.x -= 1;
-		crash = fixCrash(1, 0);
-		//if move failed, move right
-		if(crash) {
-			coor.y +=1;
-			crash = fixCrash(0, 1);
-		}
-		//else move left
-		if(crash) {
-			coor.y -=1;
-			crash = fixCrash(0, -1);
-		}
-	}
-	
+    
 	if(crashed)
 		return -5;
 	
 	return track[coor.x][coor.y];
+}
+
+void Game::halfmove() {
+    bool crash;
+    //Car always moves 1
+    //initially test if it can move up
+    coor.x -= 1;
+    crash = fixCrash(1, 0);
+    //if move failed, move right
+    if(crash) {
+        coor.y +=1;
+        crash = fixCrash(0, 1);
+    }
+    //else move left
+    if(crash) {
+        coor.y -=1;
+        crash = fixCrash(0, -1);
+    }
 }
 
 char Game::gui(int x) {
