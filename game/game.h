@@ -45,6 +45,7 @@ class Game {
 		void Print();
 		void Reset();
 		bool checkFinish();
+        void halfmove();
 		bool Status() { return status; };
 		int Reward() { return reward; };
 		Coor Position() { return coor; }
