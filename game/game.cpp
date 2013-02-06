@@ -52,8 +52,7 @@ void Game::Reset() {
 }
 
 void Game::Print() {
-    
-    system("clear");
+	system("clear");
 	for(int i=0; i<width; i++) {
 		for( int j=0; j<height; j++) {
 			cout<<((coor.x == i && coor.y == j) ? 'C' : gui(track[i][j]));
@@ -112,9 +111,6 @@ int Game::processMove() {
 			tempR--;
 		else if (tempR < 0)
 			tempR++;
-        Print();
-        cout<<"Moves: up->"<<upward<<" right->"<<rightward<<" location: "<<track[coor.x][coor.y]<<endl;
-        sleep(1);
 	}
 		
 	
@@ -191,37 +187,48 @@ bool Game::fixCrash(int uMove, int rMove) {
 		coor.y = height - 1;
 		crash = true;
 	}
-	if(track[coor.x][coor.y] == -5) {
-		if(uMove > 0) {
-			coor.x++;
-			//check that we are indeed back on the track
-			if(track[coor.x][coor.y] == -5 && rMove != 0)
-				coor.x--;
-		} else if (uMove < 0) {
-			coor.x--;
-			//check that we are indeed back on the track
-			if(track[coor.x][coor.y] == -5 && rMove != 0)
-				coor.x++;
-		}
+	
+	//fix right left
+	if( track[coor.x][coor.y] == -5 ) {
 		if(rMove > 0) {
 			coor.y--;
 			//check that we are indeed back on the track
-			if(track[coor.x][coor.y] == -5 && uMove != 0)
+			if(track[coor.x][coor.y] == -5)
 				coor.y++;
 		} else if ( rMove < 0 ) {
 			coor.y++;
 			//check that we are indeed back on the track
-			if(track[coor.x][coor.y] == -5 && uMove != 0)
+			if(track[coor.x][coor.y] == -5)
 				coor.y--;
 		}
 		crash = true;
 	}
-	//this means we moved diagonally 
-	if(track[coor.x][coor.y] == -5) {
+	//fix up down
+	if( track[coor.x][coor.y] == -5 ) {
+		if(uMove > 0) {
+			coor.x++;
+			//check that we are indeed back on the track
+			if(track[coor.x][coor.y] == -5)
+				coor.x--;
+		} else if (uMove < 0) {
+			coor.x--;
+			//check that we are indeed back on the track
+			if(track[coor.x][coor.y] == -5)
+				coor.x++;
+		}
+		crash = true;
+	}
+	//fix diagonal
+	if( track[coor.x][coor.y] == -5 ) {
 		coor.x -= -1*uMove;
 		coor.y += -1*rMove;
+		//check that we are indeed on track
+		if( track[coor.x][coor.y] == -5 ) {
+			coor.x -= -1*uMove;
+			coor.y += -1*rMove;
+		}
+		crash = true;
 	}
-	
 	
 	return crash;
 }
