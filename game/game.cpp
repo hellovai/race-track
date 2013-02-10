@@ -73,7 +73,7 @@ int Game::Move(int up, int right) {
 	rVel = max(VELMIN, rVel);
 	
 	Identity item;
-	item.coor = coor;
+	item.loc = coor;
 	item.vel.up = uVel;
 	item.vel.right = rVel;
 	
@@ -102,6 +102,7 @@ int Game::processMove() {
 	bool crash = false, crashed=false;
 	
 	int tempU = uVel, tempR = rVel;
+//	cout<<"We start at: "<<coor.x<<", "<<coor.y<<endl;
 	while((tempU != 0 || tempR != 0) && track[coor.x][coor.y] != -2 ) {
         int upward = (tempU != 0 ? tempU/abs(tempU) : 0);
         int rightward = (tempR != 0 ? tempR/abs(tempR) : 0);
@@ -112,16 +113,16 @@ int Game::processMove() {
 			crashed = true;
 		
 		//move velocity towards 0
-		if(tempU > 0 ) 
+		if(tempU > 0 )
 			tempU--;
 		else if (tempU < 0)
 			tempU++;
-		if(tempR > 0 ) 
+		if(tempR > 0 )
 			tempR--;
 		else if (tempR < 0)
 			tempR++;
+//		cout<<"We are at: "<<coor.x<<", "<<coor.y<<endl;
 	}
-		
 	
 	//This means we got the end
 	if(track[coor.x][coor.y] == -2)

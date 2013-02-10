@@ -14,7 +14,7 @@
 using namespace std;
 
 #define VELMAX 5
-#define VELMIN -5
+#define VELMIN 0
 
 typedef struct {
 	int x;

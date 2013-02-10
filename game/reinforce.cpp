@@ -17,8 +17,7 @@ Reinforce::Reinforce( Game* curr_game, int epsilon ) {
 	
 	int width = curr_game->Width();
 	int height = curr_game->Height();
-	int vel = VELMAX - VELMIN;
-	
+	int vel = VELMAX - VELMIN + 1;
 	//initialize rewards to 0
 	reward = new double***[width];
 	for( int i=0; i<width; i++ ) {
@@ -44,30 +43,43 @@ Reinforce::Reinforce( Game* curr_game, int epsilon ) {
 			}
 		}
 	}
-	
 }
 
-void Reinforce::Log( string filename ) {
+void Reinforce::Log( string filename, int i, double mean, int mini, int maxi, double std ) {
 	filename.append(".log");
 	ofstream myfile;
 	myfile.open(filename.c_str(), ios::app);
-	myfile<<game->Reward()<<endl;
+	myfile<<i<<" "<<mean<<" "<<mini<<" "<<maxi<<" "<<mean-std<<" "<<mean+std<<endl;
 	myfile.close();
 }
 
 void Reinforce::Update() {
 	vector<Identity> moveList = game->Moves();
 	int total_reward = game->Reward();
+//	cout<<"Number of Moves: "<<moveList.size()<<endl;
 	
-	for(int curr_move=0; curr_move<moveList.size(); curr_move-- ) {
-		Identity item = moveList[curr_move];
+	for(int i=0; i<moveList.size(); i++ ) {
+//		cout<<i<<" "<<moveList[i].loc.x<<endl;
+		Identity item = moveList[i];
+		item.vel.up +=  abs(VELMIN);
+		item.vel.right +=  abs(VELMIN);
+//		cout<<"\tIdentified ["<<item.loc.x<<"]["<<item.loc.y<<"]["<<item.vel.up<<"]["<<item.vel.right<<"]"<<endl;
 		double* curr_r = &reward[item.loc.x][item.loc.y][item.vel.up][item.vel.right];
+//		cout<<"\tIdentified reward: "<<(*curr_r)<<endl;
 		int* curr_v = &visits[item.loc.x][item.loc.y][item.vel.up][item.vel.right];
+//		cout<<"\tIdentified visits: "<<(*curr_v)<<endl;
 		
-		reward[item.loc.x][item.loc.y][item.vel.up][item.vel.right] = (*curr_r)*(*curr_v) + (double) total_reward;
+//		cout<<"\tSTART:\t"<<(*curr_v)<<" "<<(*curr_r)<<endl;
+		
 		visits[item.loc.x][item.loc.y][item.vel.up][item.vel.right] = (*curr_v)+1;
-		reward[item.loc.x][item.loc.y][item.vel.up][item.vel.right] = (*curr_r) / ( (double) (*curr_v)+1);
+//		cout<<"\tUpdated visits"<<endl;
+		reward[item.loc.x][item.loc.y][item.vel.up][item.vel.right] = (*curr_r) + 1/((double) (*curr_v))*((double) total_reward + item.reward - (*curr_r));
+//		cout<<"\tUpdated reward"<<endl;
+		
+//		cout<<"FINISH:\t"<<item.loc.x<<", "<<item.loc.y<<"::"<<(*curr_v)<<" "<<(*curr_r)<<endl;
 	}
+//	cout<<"DONE"<<endl;
+//	cin.ignore();
 }
 
 Vel Reinforce::Move( ) {
@@ -84,8 +96,10 @@ Vel Reinforce::Move( ) {
 }
 
 void Reinforce::Epsilon( int gameCounter ) {
-	if(gameCounter % 100 == 99)
-		e*= 0.9;
+	if(gameCounter % 100 == 99) {
+		e*= 0.99;
+		//cout<<"Epsilon: "<<e<<endl;
+	}
 }
 
 //Private Functions
@@ -97,14 +111,23 @@ Vel Reinforce::Exploit( ) {
 	int uEnd = min(vel.up + abs(VELMIN) + 1, VELMAX-VELMIN-1);
 	int rStart = max(vel.right + abs(VELMIN) - 1, 0);
 	int rEnd = min(vel.right + abs(VELMIN) + 1, VELMAX-VELMIN-1);
+	rEnd = max(rEnd, vel.right);
+	uEnd = max(uEnd, vel.up);
 	
 	vector<int> uMAX, rMAX;
 	uMAX.push_back(uStart);
 	rMAX.push_back(rStart);
-	
+//	cout<<"Position: "<<car.x<<" "<<car.y<<endl;
+//	cout<<"U Min: "<<uStart - abs(VELMIN)<<endl;
+//	cout<<"U Max: "<<uEnd - abs(VELMIN)<<endl;
+//	cout<<"R Min: "<<rStart - abs(VELMIN)<<endl;
+//	cout<<"R Max: "<<rEnd - abs(VELMIN)<<endl;
+//	
 	double maxReward = curr_reward[uMAX[0]][rMAX[0]]; 
 	for( int i=uStart; i<=uEnd; i++ )
-		for( int j=rStart; j<=rEnd; j++ )
+		for( int j=rStart; j<=rEnd; j++ ) {
+//			cout<<"\tReward: "<<i<<" "<<j<<", "<<endl;
+//			cout<<curr_reward[i][j]<<endl;
 			if(curr_reward[i][j] > maxReward) {
 				maxReward = curr_reward[i][j];
 				uMAX.clear();
@@ -115,9 +138,11 @@ Vel Reinforce::Exploit( ) {
 				uMAX.push_back(i);
 				rMAX.push_back(j);
 			}
+	}
 	
 	vel.up = uMAX[rand() % uMAX.size()] - abs(VELMIN);
 	vel.right = rMAX[rand() % rMAX.size()] - abs(VELMIN);
+//	cout<<"velocity: "<<vel.up<<" "<<vel.right<<endl;
 	return vel;
 }
 
@@ -125,5 +150,6 @@ Vel Reinforce::Explore( ) {
 	Vel vel;
 	vel.up = rand() % 3 - 1;
 	vel.right = rand() % 3 - 1;
+//	cout<<"velocity: "<<vel.up<<" "<<vel.right<<endl;
 	return vel;
 }

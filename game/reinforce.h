@@ -30,8 +30,10 @@ class Reinforce {
 		Vel Move( );
 		void Update( );
 		void Epsilon( int gameCounter );
-		void Log( string filename );		
+		void Log( string filename, int i, double mean, int mini, int maxi, double std );		
 		void Change_game ( Game* curr_game ) { game = curr_game; };
+		int ep() { return e; }
+		void ChangeEpsilon( int x ) { e = x; }
 };
 
 //=================================
