@@ -9,5 +9,5 @@ set grid
 set xrange [0:10000]
 set style data lines
 set autoscale y
-plot "./basic.log" using 1:2 title "Score", "" using 1:3 title "Best Case", "" using 1:4 title "Worst Case", "" using 1:5 title "Mean - STD", "" using 1:6 title "Mean + STD", "" using 1:7 title "Epsilon"
+plot "./race.log" using 1:2 title "Score", "" using 1:3 title "Best Case", "" using 1:4 title "Worst Case", "" using 1:5 title "Mean - STD", "" using 1:6 title "Mean + STD", "" using 1:7 title "Epsilon"
 #

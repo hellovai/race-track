@@ -41,11 +41,15 @@ int main(int argc, char* argv[]) {
 		game.Reset();
 		//cout<<"Game: "<<i<<endl;
 		while(game.Status()) {
-//		    game.Print();
-//		    sleep(1);
+            if(i<5 || i>gameCounter-5) {
+                game.Print();
+                sleep(1);
+            }
 		    game.halfmove();
-//			game.Print();
-//			sleep(1);
+            if(i<10 || i>gameCounter*0.9) {
+                game.Print();
+                sleep(1);
+            }
 			Vel temp = agent.Move();
 			game.Move(temp.up, temp.right);
 //			cin.ignore();
