@@ -17,7 +17,7 @@ using namespace std;
 void simulate(string filestart, Reinforce* agent, int counter);
 void store(string filename,int counter,  int game, int reward);
 
-int simulateGames = 100;
+int simulateGames = 1000;
 
 int main(int argc, char* argv[]) {	
 	srand ( time(NULL) );
@@ -34,6 +34,8 @@ int main(int argc, char* argv[]) {
 	Game game(filestart);
 	Reinforce agent(&game, epsilon);
 	
+	simulate(filestart, &agent, 0);
+	agent.Change_game(&game);
 	
 	for(int i=0; i<gameCounter; i++) {
 		game.Reset();
@@ -41,7 +43,7 @@ int main(int argc, char* argv[]) {
 		while(game.Status()) {
 //		    game.Print();
 //		    sleep(1);
-		    //game.halfmove();
+		    game.halfmove();
 //			game.Print();
 //			sleep(1);
 			Vel temp = agent.Move();
@@ -63,8 +65,8 @@ int main(int argc, char* argv[]) {
 void simulate(string filestart, Reinforce* agent, int counter) {
 	Game temp(filestart);
 	agent->Change_game(&temp);
-	int ep = agent->ep();
-	agent->ChangeEpsilon(0);
+	double ep = agent->ep();
+//	agent->ChangeEpsilon(0);
 	vector<int> rewards;
 	for( int i=0; i<simulateGames; i++ ) {
 		temp.Reset();
@@ -77,13 +79,13 @@ void simulate(string filestart, Reinforce* agent, int counter) {
 	}
 	double sum = 0;
 	double scale = 1;
-	for( int i=0; i<rewards.size(); i++ )
+	for( int i=0; i<(int) rewards.size(); i++ )
 		sum+=rewards[i];
 	double m = sum / rewards.size();
 	double accum = 0.0;
 	int mini = rewards[0];
 	int maxi = rewards[0];
-	for( int i=1; i<rewards.size(); i++ ) {
+	for( int i=1; i<(int) rewards.size(); i++ ) {
 		accum+=(rewards[i]-m)*(rewards[i]-m);
 		if(rewards[i] < mini)
 			mini = rewards[i];
@@ -91,34 +93,11 @@ void simulate(string filestart, Reinforce* agent, int counter) {
 			maxi = rewards[i];
 	}
 	double std = sqrt(accum/rewards.size());
-//	cout<<m<<" "<<std<<endl;
-	if(false) {
-		sum = 0;
-		double counte = 0;
-		accum = 0;
-		for( int i=0; i<rewards.size(); i++ ) {
-			if(rewards[i] > m) {
-				sum+=rewards[i];
-				counte+=1;
-			}
-		}
-		for( int i=0; i<rewards.size(); i++ ) {
-			if(rewards[i] > m) {
-				accum+=(rewards[i]-sum/counte)*(rewards[i]-sum/counte);
-			}
-		}
-		std = sqrt(accum/counte);
-		m = sum/counte;
-	
-//		scale -= counte/simulateGames;
-		m *= scale;
-		std *= scale;
-	}
 	
 	cout<<"Counter: "<<counter<<endl;
 	cout<<"Scale: "<<scale<<" Mean: "<<m<<" STD: "<<std<<endl;
-	agent->Log(filestart, counter, m, mini, maxi, std);
-	agent->ChangeEpsilon(ep);
+	agent->Log(filestart, counter, m, mini, maxi, std, ep);
+//	agent->ChangeEpsilon(ep);
 }
 
 void store(string filename, int counter, int game, int reward) {
