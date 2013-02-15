@@ -181,10 +181,12 @@ void store(string filename, int counter, int game, int reward) {
 }
 
 void improper(string key) {
-	cout<<"Improper usage of "<<key<<endl;
+	if(key.compare("-h") != 0)
+		cout<<"Improper usage of "<<key<<endl;
 	cout<<"Usage: ./race-track [-f filename-without-extention] [-g episode]"<<endl;
 	cout<<"\t\t[-e epsilon] [-q reward] [-p games]"<<endl;
 	cout<<"\t\t[-off] [-debug]"<<endl;
+	cout<<"./race-track -h displays usage"<<endl;
 	cout<<"View README for more info"<<endl;
 	exit(0);
 }
