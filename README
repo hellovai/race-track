@@ -15,11 +15,12 @@ arguements
 	-q double ----------------------- initialize starting value for rewards
 	-off ---------------------------- disables halfstep
 	-debug -------------------------- displays all actions, rewards, and decisions per timestep
+	-h ------------------------------ displays usage
 	
 	defaults are as such
-	./race-track -f race -e 0 -q 0 -p 5 -g 10000
+	./race-track -f filename -e 0 -q 0 -p 5 -g 10000
 	
-		create a track based on "race.dat" file
+		create a track based on "filename.dat"
 		e = 0
 		# of episodes = 1000
 		Q(t=0, s, a) = 0

@@ -19,7 +19,7 @@ void store(string filename,int counter,  int game, int reward);
 
 int simulateGames = 1000;
 bool halfstep = true;
-string filestart = "race";
+string filestart;
 bool debug = false;
 
 int main(int argc, char* argv[]) {	
@@ -62,6 +62,11 @@ int main(int argc, char* argv[]) {
 			improper(key);
 
 		argc--;		
+	}
+	
+	if(filestart.compare("") == 0){
+		cout<<"No input file..."<<endl;
+		improper("-h");
 	}
 	
 	epsilon = max(epsilon, 100.0);
@@ -183,8 +188,9 @@ void store(string filename, int counter, int game, int reward) {
 void improper(string key) {
 	if(key.compare("-h") != 0)
 		cout<<"Improper usage of "<<key<<endl;
-	cout<<"Usage: ./race-track [-f filename-without-extention] [-g episode]"<<endl;
-	cout<<"\t\t[-e epsilon] [-q reward] [-p games]"<<endl;
+	cout<<"Usage: ./race-track -f filename-without-dat"<<endl;
+	cout<<"\t\t[-g episode] [-p games-to-print]"<<endl;
+	cout<<"\t\t[-e epsilon] [-q reward]"<<endl;
 	cout<<"\t\t[-off] [-debug]"<<endl;
 	cout<<"./race-track -h displays usage"<<endl;
 	cout<<"View README for more info"<<endl;
