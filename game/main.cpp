@@ -14,72 +14,131 @@
 
 using namespace std;
 
-void simulate(string filestart, Reinforce* agent, int counter);
+void simulate(Reinforce* agent, int counter);
 void store(string filename,int counter,  int game, int reward);
 
 int simulateGames = 1000;
+bool halfstep = true;
+string filestart = "race";
+bool debug = false;
 
 int main(int argc, char* argv[]) {	
+	
 	srand ( time(NULL) );
-	string filestart = "race";
+	
 	int gameCounter = 1000;
-	int epsilon = 10;
-	if(argc >= 2)
-		filestart = argv[1];
-	if(argc >= 3)
-		epsilon = atoi(argv[2]);
-	if(argc >= 4)
-		gameCounter = atoi(argv[3]);
+	double epsilon = 0.0;
+	double qVal = 0.0;
+	int GAMEPRINT = 5;
+	
+	int argCounter = 1;  //to account for starting filename that it counts
+	argc -= 1;
+	while(argc > 0) {
+		bool valid = true;
+		string key = argv[argCounter++];
+		argc--;
+		if ( key.compare("-off") != 0 && key.compare("-debug") != 0 && argc == 0 )
+			improper(key);
+		
+		if ( key.compare("-f") == 0 )
+			filestart=argv[argCounter++];
+		else if ( key.compare("-e") == 0 )
+			epsilon = atoi(argv[argCounter++]);
+		else if ( key.compare("-q") == 0 )
+			qVal = atoi(argv[argCounter++]);
+		else if ( key.compare("-p") == 0 )
+			GAMEPRINT = atoi(argv[argCounter++]);
+		else if ( key.compare("-g") == 0 )
+			gameCounter = atoi(argv[argCounter++]);
+		else if ( key.compare("-off") == 0 ) {
+			argc++;
+			halfstep = false;
+		} else if ( key.compare("-debug") == 0 ) {
+			argc++;
+			debug = true;
+			cout<<"Entering Debug mode..."<<endl;
+			cout<<"No files will be created and saved!"<<endl;
+		} else 
+			improper(key);
+
+		argc--;		
+	}
+	
+	epsilon = max(epsilon, 100.0);
+	epsilon = min(epsilon, 0.0);
+	
+	if(debug) {
+		cout<<"File: "<<filestart<<".dat"<<endl;
+		cout<<"Episodes: "<<gameCounter<<endl;
+		cout<<"Staring Reward: "<<qVal<<endl;
+		cout<<"Epsilon: "<<epsilon<<endl;
+		cout<<"Halfstep: "<<(halfstep ? "Yes" : "No")<<endl;
+		cout<<"Press Enter to continue: ";
+		cin.ignore();
+	}
 	
 	Game game(filestart);
-	Reinforce agent(&game, epsilon);
+	Reinforce agent(&game, epsilon, qVal);
 	
-	simulate(filestart, &agent, 0);
+	agent.setDebug(debug);
+	simulate(&agent, 0);
 	agent.Change_game(&game);
 	
 	for(int i=0; i<gameCounter; i++) {
 		game.Reset();
-		//cout<<"Game: "<<i<<endl;
 		while(game.Status()) {
-            if(i<5 || i>gameCounter-5) {
+            bool print = false;
+            if(debug == true || (i<GAMEPRINT || i>gameCounter-GAMEPRINT))
+            	print = true;
+            	
+            if(print) {
                 game.Print();
                 sleep(1);
             }
-		    game.halfmove();
-            if(i<10 || i>gameCounter*0.9) {
-                game.Print();
-                sleep(1);
+            if(halfstep) {
+				game.halfmove();
+		        if(print) {
+		            game.Print();
+		            sleep(1);
+		        }
             }
 			Vel temp = agent.Move();
 			game.Move(temp.up, temp.right);
-//			cin.ignore();
+			if(debug) {
+				cout<<"Press enter to continue: ";
+				cin.ignore();
+			}
 		}
-		//game.Print();
-		//cout<<"Congrats! Score: "<<game.Reward()<<endl;
 		agent.Update();
 		agent.Epsilon(i);
+		if(debug) {
+			cout<<"Press enter to continue: ";
+			cin.ignore();
+		}
 		if(i % 10 == 9) {
-			simulate(filestart, &agent, i);
+			simulate(&agent, i);
 			agent.Change_game(&game);
 		}
 	}
 	return 0;
 }
 
-void simulate(string filestart, Reinforce* agent, int counter) {
+void simulate(Reinforce* agent, int counter) {
 	Game temp(filestart);
 	agent->Change_game(&temp);
+	agent->setDebug(false);
 	double ep = agent->ep();
-//	agent->ChangeEpsilon(0);
 	vector<int> rewards;
 	for( int i=0; i<simulateGames; i++ ) {
 		temp.Reset();
 		while(temp.Status()) {
+			if(halfstep)
+				temp.halfmove();
 			Vel velo = agent->Move();
 			temp.Move(velo.up, velo.right );
 		}
 		rewards.push_back(temp.Reward());
-		store(filestart, counter, i, temp.Reward() );
+		if(!debug) store(filestart, counter, i, temp.Reward() );
 	}
 	double sum = 0;
 	double scale = 1;
@@ -100,8 +159,11 @@ void simulate(string filestart, Reinforce* agent, int counter) {
 	
 	cout<<"Counter: "<<counter<<endl;
 	cout<<"Scale: "<<scale<<" Mean: "<<m<<" STD: "<<std<<endl;
-	agent->Log(filestart, counter, m, mini, maxi, std, ep);
-//	agent->ChangeEpsilon(ep);
+	if(!debug) {
+	//	agent->Log(filestart, counter, m, mini, maxi, std, ep);
+		agent->Log(filestart, counter, rewards, mini, maxi, m);
+	}
+	agent->setDebug(debug);
 }
 
 void store(string filename, int counter, int game, int reward) {
@@ -118,3 +180,11 @@ void store(string filename, int counter, int game, int reward) {
 	myfile.close();
 }
 
+void improper(string key) {
+	cout<<"Improper usage of "<<key<<endl;
+	cout<<"Usage: ./race-track [-f filename-without-extention] [-g episode]"<<endl;
+	cout<<"\t\t[-e epsilon] [-q reward] [-p games]"<<endl;
+	cout<<"\t\t[-off] [-debug]"<<endl;
+	cout<<"View README for more info"<<endl;
+	exit(0);
+}

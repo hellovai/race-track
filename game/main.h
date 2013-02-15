@@ -32,6 +32,10 @@ typedef struct {
 	int reward;
 } Identity;
 
+
+void improper(string key);
+
+
 //=================================
 // end guard
 #endif

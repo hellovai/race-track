@@ -6,10 +6,25 @@ in the main directory run:
 	cd ../
 
 usage
-	./race-track <race-name> <starting e value> <number of games>
-
-default is "race.dat" file
-create a track based on that file
-
+	./race-track
+arguements
+	-f "file without extention" ---------------------- Tells what file to read and where to store. program will append ".dat" to allow for reading
+	-e double ----------------------- initialize epsilon (0 - 100)
+	-g integer ---------------------- Number of episodes
+	-p integer ---------------------- Show first and last n games
+	-q double ----------------------- initialize starting value for rewards
+	-off ---------------------------- disables halfstep
+	-debug -------------------------- displays all actions, rewards, and decisions per timestep
+	
+	defaults are as such
+	./race-track -f race -e 0 -q 0 -p 5 -g 10000
+	
+		create a track based on "race.dat" file
+		e = 0
+		# of episodes = 1000
+		Q(t=0, s, a) = 0
+		display first and last 5 games
+		halfstep is enabled
+		
 Notes:
-	There is some learning that is happening, some results are in the results/ directory, however, it does not seem to be typical of montecarlo
+	There is some learning that is happening, some results are in the ./results/ directory, 

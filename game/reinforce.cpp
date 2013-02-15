@@ -11,9 +11,11 @@
 
 using namespace std;
 
-Reinforce::Reinforce( Game* curr_game, double epsilon ) {
+Reinforce::Reinforce( Game* curr_game, double epsilon, double qVal ) {
 	game = curr_game;
 	e = epsilon;
+	debug = false;
+	
 	
 	int width = curr_game->Width();
 	int height = curr_game->Height();
@@ -27,7 +29,7 @@ Reinforce::Reinforce( Game* curr_game, double epsilon ) {
 			for( int k=0; k<vel; k++ ) {
 				reward[i][j][k] = new double[vel];
 				for ( int l=0; l<vel; l++ )
-					reward[i][j][k][l] = -50.0;
+					reward[i][j][k][l] = qVal;
 			}
 		}
 	}
@@ -45,6 +47,7 @@ Reinforce::Reinforce( Game* curr_game, double epsilon ) {
 	}
 }
 
+//log for arrays
 void Reinforce::Log( string filename, int i, double mean, int mini, int maxi, double std, double epsi ) {
 	filename.append(".log");
 	ofstream myfile;
@@ -53,82 +56,106 @@ void Reinforce::Log( string filename, int i, double mean, int mini, int maxi, do
 	myfile.close();
 }
 
+//log for box plot
+void Reinforce::Log( string filename, int i, vector<int> rewardList, int mini, int maxi, double mean) {	
+	sort(rewardList.begin(), rewardList.end());
+	double q1, q2, q3, box_min, box_max;
+	q2 = get_median(rewardList);
+	
+	vector<int> top, bottom;
+	for(int in=0; in<(int) rewardList.size(); in++) {
+		if(in < (int) rewardList.size()/2)
+			bottom.push_back(rewardList[in]);
+		else if( in >(int)  rewardList.size()/2)
+			top.push_back(rewardList[in]);
+		else if( rewardList.size() % 2 == 0) // if i is middle value is implied already
+			bottom.push_back(rewardList[in]);
+	}
+	
+	q1 = get_median(bottom);
+	q3 = get_median(top);
+	
+	box_min = min(q1 - 1.5*(q1 - q3), (double) maxi);
+	box_max = max(q3 + 1.5*(q1 - q3), (double) mini);
+	
+	filename.append(".log");
+	ofstream myfile;
+	myfile.open(filename.c_str(), ios::app);
+	myfile<<i<<" "<<mini<<" "<<box_max<<" "<<q1<<" "<<q2<<" "<<q3<<" "<<box_min<<" "<<maxi<<" "<<mean<<endl;
+	myfile.close();
+}
+
 void Reinforce::Update() {
 	vector<Identity> moveList = game->Moves();
 	int total_reward = game->Reward();
-//	cout<<"Number of Moves: "<<moveList.size()<<endl;
 	
 	for(int i=0; i<(int) moveList.size(); i++ ) {
-//		cout<<i<<" "<<moveList[i].loc.x<<endl;
 		Identity item = moveList[i];
-		item.vel.up +=  abs(VELMIN);
-		item.vel.right +=  abs(VELMIN);
-//		cout<<"\tIdentified ["<<item.loc.x<<"]["<<item.loc.y<<"]["<<item.vel.up<<"]["<<item.vel.right<<"]"<<endl;
+		item.vel.up -=  VELMIN;
+		item.vel.right -=  VELMIN;
 		double* curr_r = &reward[item.loc.x][item.loc.y][item.vel.up][item.vel.right];
-//		cout<<"\tIdentified reward: "<<(*curr_r)<<endl;
 		int* curr_v = &visits[item.loc.x][item.loc.y][item.vel.up][item.vel.right];
-//		cout<<"\tIdentified visits: "<<(*curr_v)<<endl;
-		
-//		cout<<"\tSTART:\t"<<(*curr_v)<<" "<<(*curr_r)<<endl;
-		
+		if(debug) {
+			cout<<"Updating..."<<endl;
+			cout<<"\tPosition:\t"<<item.loc.x<<", "<<item.loc.y<<endl;
+			cout<<"\tVelocity:\t"<<item.vel.up<<", "<<item.vel.right<<endl;
+			cout<<"\tReward:\t"<<
+			cout<<"\tFrom:\t\t"<<(*curr_r)<<" Visited: "<<(*curr_v)<<endl;
+		}
 		visits[item.loc.x][item.loc.y][item.vel.up][item.vel.right] = (*curr_v)+1;
-//		cout<<"\tUpdated visits"<<endl;
-		reward[item.loc.x][item.loc.y][item.vel.up][item.vel.right] = (*curr_r) + 1/((double) (*curr_v))*((double) total_reward + item.reward - (*curr_r));
-//		cout<<"\tUpdated reward"<<endl;
-		
-//		cout<<"FINISH:\t"<<item.loc.x<<", "<<item.loc.y<<"::"<<(*curr_v)<<" "<<(*curr_r)<<endl;
+		reward[item.loc.x][item.loc.y][item.vel.up][item.vel.right] = (*curr_r) + 1/((double) (*curr_v))*((double) total_reward + item.reward - (*curr_r));		
+		if(debug) {
+			cout<<"\tTo:\t\t"<<(*curr_r)<<" Visited: "<<(*curr_v)<<endl;
+		}
 	}
-//	cout<<"DONE"<<endl;
-//	cin.ignore();
 }
 
 Vel Reinforce::Move( ) {
 	double numb = rand() % 100;
-	if( numb <= e ) {
-		//cout<<"Exploring: "<<endl;
-		//sleep(1);
+	if( numb <= e )
 		return Explore();
-	} else {
-		//cout<<"Exploiting: "<<endl;
-		//sleep(1);
+	else
 		return Exploit();
-	}
 }
 
 void Reinforce::Epsilon( int gameCounter ) {
-	if(gameCounter % 10 == 9) {
+	if(gameCounter % 10 == 9)
 		e*= 0.999;
-		//cout<<"Epsilon: "<<e<<endl;
-	}
+	if(debug)
+		cout<<"Epsilon is: "<<e<<endl;
 }
 
 //Private Functions
 Vel Reinforce::Exploit( ) {
+	if(debug)
+		cout<<"EXPLOTING!"<<endl;
 	Coor car = game->Position();
 	Vel vel = game->Velocity();
+	Vel orig = vel;
+	
+	vel.up -= VELMIN;
+	vel.right -= VELMIN;
 	double **curr_reward = reward[car.x][car.y];
-	int uStart = max(vel.up + abs(VELMIN) - 1, 0);
-	int uEnd = min(vel.up + abs(VELMIN) + 1, VELMAX-VELMIN-1);
-	int rStart = max(vel.right + abs(VELMIN) - 1, 0);
-	int rEnd = min(vel.right + abs(VELMIN) + 1, VELMAX-VELMIN-1);
-	rEnd = max(rEnd, vel.right);
-	uEnd = max(uEnd, vel.up);
+	int uStart = max(vel.up - 1, 0);
+	int uEnd = min(vel.up + 1, VELMAX-VELMIN);
+	int rStart = max(vel.right - 1, 0);
+	int rEnd = min(vel.right + 1, VELMAX-VELMIN);
 	
 	vector<int> uMAX, rMAX;
 	uMAX.push_back(uStart);
 	rMAX.push_back(rStart);
-//	cout<<"Position: "<<car.x<<" "<<car.y<<endl;
-//	cout<<"U Min: "<<uStart - abs(VELMIN)<<endl;
-//	cout<<"U Max: "<<uEnd - abs(VELMIN)<<endl;
-//	cout<<"R Min: "<<rStart - abs(VELMIN)<<endl;
-//	cout<<"R Max: "<<rEnd - abs(VELMIN)<<endl;
-//	
-//	double maxReward = curr_reward[uMAX[0]][rMAX[0]]; 
-	double maxReward = curr_reward[0][0]; 
-	for( int i=0; i<=VELMAX-VELMIN-1; i++ )
-		for( int j=0; j<=VELMAX-VELMIN-1; j++ ) {
-//			cout<<"\tReward: "<<i<<" "<<j<<", "<<endl;
-//			cout<<curr_reward[i][j]<<endl;
+	if(debug) {
+		cout<<"Position: "<<car.x<<" "<<car.y<<endl;
+		cout<<"Velocity: "<<vel.up<<" "<<vel.right<<endl;
+		cout<<"U Min: "<<uStart - abs(VELMIN)<<endl;
+		cout<<"U Max: "<<uEnd - abs(VELMIN)<<endl;
+		cout<<"R Min: "<<rStart - abs(VELMIN)<<endl;
+		cout<<"R Max: "<<rEnd - abs(VELMIN)<<endl;
+	}
+	double maxReward = curr_reward[uStart][rStart]; 
+	for( int i=uStart; i<=uEnd; i++ )
+		for( int j=rStart; j<=rEnd; j++ ) {
+			if(debug) cout<<"\tReward: "<<i<<" "<<j<<", "<<curr_reward[i][j]<<endl;
 			if(curr_reward[i][j] > maxReward) {
 				maxReward = curr_reward[i][j];
 				uMAX.clear();
@@ -141,20 +168,48 @@ Vel Reinforce::Exploit( ) {
 			}
 	}
 	
-	vel.up = uMAX[rand() % uMAX.size()] - abs(VELMIN);
-	vel.right = rMAX[rand() % rMAX.size()] - abs(VELMIN);
+	if(debug) {
+		cout<<"uMax ";
+		for(int i =0; i<(int) uMAX.size(); i++)
+			cout<<uMAX[i]<<" ";
+			cout<<endl<<"rMax ";
+		for(int i=0; i<(int) rMAX.size(); i++)
+			cout<<rMAX[i]<<" ";
+			cout<<endl;
+	}
+	
+	vel.up = uMAX[rand() % uMAX.size()] + VELMIN - orig.up;
+	vel.right = rMAX[rand() % rMAX.size()] + VELMIN - orig.right;
+	
 	if(vel.up < 0 ) vel.up = -1;
 	else if(vel.up > 0 ) vel.up = 1;
 	if(vel.right < 0 ) vel.right = -1;
 	else if(vel.right > 0 ) vel.right = 1;
-//	cout<<"velocity: "<<vel.up<<" "<<vel.right<<endl;
+	
+	if(debug) {
+		cout<<"velocity: "<<vel.up<<" "<<vel.right<<endl;
+		sleep(1);
+	}
+	
 	return vel;
 }
 
 Vel Reinforce::Explore( ) {
+	if(debug)
+		cout<<"EXPLORING!"<<endl;
 	Vel vel;
 	vel.up = rand() % 3 - 1;
 	vel.right = rand() % 3 - 1;
-//	cout<<"velocity: "<<vel.up<<" "<<vel.right<<endl;
+	if(debug)
+	cout<<"Velocity: "<<vel.up<<" "<<vel.right<<endl;
 	return vel;
+}
+
+double Reinforce::get_median( vector<int> array ) {
+	double median_item;
+	if(array.size() % 2 == 1)
+		median_item = (double) array[array.size()/2 + 1];
+	else
+		median_item = ((double) array[array.size()/2] + (double) array[array.size()/2 - 1])/2.0;
+	return median_item;
 }
