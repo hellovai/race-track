@@ -6,9 +6,8 @@ in the main directory run:
 	cd ../
 
 usage
-	./race-track
+	./race-track -f "file without extention"
 arguements
-	-f "file without extention" ---------------------- Tells what file to read and where to store. program will append ".dat" to allow for reading
 	-e double ----------------------- initialize epsilon (0 - 100)
 	-g integer ---------------------- Number of episodes
 	-p integer ---------------------- Show first and last n games

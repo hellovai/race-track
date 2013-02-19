@@ -16,6 +16,7 @@ using namespace std;
 class Reinforce {
 	Game* game;
 	double e;
+	double lambda;
 	
 	//reward list
 	double ****reward;
@@ -27,6 +28,7 @@ class Reinforce {
 	
 	double get_median(vector<int> array);
 	bool debug;
+	double get_reward(int , int);
 	
 	public:
 		Reinforce( Game* curr_game, double epsilon, double qVal );
@@ -43,6 +45,7 @@ class Reinforce {
 		double ep() { return e; }
 		void ChangeEpsilon( double x ) { e = x; }
 		void setDebug(bool debg ) { debug = debg; }
+		void setLambda(double number ) { lambda = number; }
 };
 
 //=================================

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <cstdlib>
 #include <time.h>
 #include <iostream>
 #include <fstream>
@@ -30,6 +31,7 @@ int main(int argc, char* argv[]) {
 	double epsilon = 0.0;
 	double qVal = 0.0;
 	int GAMEPRINT = 5;
+	double lambda = 1;
 	
 	int argCounter = 1;  //to account for starting filename that it counts
 	argc -= 1;
@@ -43,13 +45,15 @@ int main(int argc, char* argv[]) {
 		if ( key.compare("-f") == 0 )
 			filestart=argv[argCounter++];
 		else if ( key.compare("-e") == 0 )
-			epsilon = atoi(argv[argCounter++]);
+			epsilon = atof(argv[argCounter++]);
 		else if ( key.compare("-q") == 0 )
-			qVal = atoi(argv[argCounter++]);
+			qVal = atof(argv[argCounter++]);
 		else if ( key.compare("-p") == 0 )
 			GAMEPRINT = atoi(argv[argCounter++]);
 		else if ( key.compare("-g") == 0 )
 			gameCounter = atoi(argv[argCounter++]);
+		else if ( key.compare("-l") == 0 )
+			lambda = atof(argv[argCounter++]);
 		else if ( key.compare("-off") == 0 ) {
 			argc++;
 			halfstep = false;
@@ -73,11 +77,15 @@ int main(int argc, char* argv[]) {
 	epsilon = min(epsilon, 0.0);
 	
 	if(debug) {
-		cout<<"File: "<<filestart<<".dat"<<endl;
-		cout<<"Episodes: "<<gameCounter<<endl;
-		cout<<"Staring Reward: "<<qVal<<endl;
-		cout<<"Epsilon: "<<epsilon<<endl;
-		cout<<"Halfstep: "<<(halfstep ? "Yes" : "No")<<endl;
+		cout<<"------------------------"<<endl;
+		cout<<"Configuration"<<endl;
+		cout<<"------------------------"<<endl;
+		cout<<"File:\t\t"<<filestart<<".dat"<<endl;
+		cout<<"Episodes:\t"<<gameCounter<<endl;
+		cout<<"Initial Reward:\t"<<qVal<<endl;
+		cout<<"Epsilon:\t"<<epsilon<<endl;
+		cout<<"lambda:\t\t"<<lambda<<endl;
+		cout<<"Halfstep:\t"<<(halfstep ? "Yes" : "No")<<endl;
 		cout<<"Press Enter to continue: ";
 		cin.ignore();
 	}
@@ -86,6 +94,7 @@ int main(int argc, char* argv[]) {
 	Reinforce agent(&game, epsilon, qVal);
 	
 	agent.setDebug(debug);
+	agent.setLambda(lambda);
 	simulate(&agent, 0);
 	agent.Change_game(&game);
 	
@@ -98,13 +107,16 @@ int main(int argc, char* argv[]) {
             	
             if(print) {
                 game.Print();
+                cout<<"Episode: "<<i<<endl;
                 sleep(1);
             }
             if(halfstep) {
 				game.halfmove();
 		        if(print) {
 		            game.Print();
-		            sleep(1);
+		            cout<<"Half-step!"<<endl;
+                	cout<<"Episode: "<<i<<endl;
+		            if(!debug) sleep(1);
 		        }
             }
 			Vel temp = agent.Move();

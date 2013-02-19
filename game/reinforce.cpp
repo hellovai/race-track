@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <cmath>
 
 #include "main.h"
 #include "game.h"
@@ -15,7 +16,7 @@ Reinforce::Reinforce( Game* curr_game, double epsilon, double qVal ) {
 	game = curr_game;
 	e = epsilon;
 	debug = false;
-	
+	lambda = 1;
 	
 	int width = curr_game->Width();
 	int height = curr_game->Height();
@@ -90,20 +91,35 @@ void Reinforce::Update() {
 	int total_reward = game->Reward();
 	
 	for(int i=0; i<(int) moveList.size(); i++ ) {
-		Identity item = moveList[i];
-		item.vel.up -=  VELMIN;
-		item.vel.right -=  VELMIN;
-		double* curr_r = &reward[item.loc.x][item.loc.y][item.vel.up][item.vel.right];
-		int* curr_v = &visits[item.loc.x][item.loc.y][item.vel.up][item.vel.right];
+		double sum = 0;
+		int count = 1;
+		if(debug) cout<<"sum = ( 0";
+		for(int j=0; j<(int) moveList.size()-1-i; j++) {
+			sum += pow(lambda, count-1)*get_reward(i, count);
+			if(debug) cout<<"+ pow("<<lambda<<", "<<count-1<<") * R_["<<i<<"]("<<count<<") ";
+			count++;
+		}
+		sum *= (1-lambda);
+		if(debug) cout<<") * ("<<1-lambda<<") ";
+		
+			Identity item = moveList[i];
+			item.vel.up -=  VELMIN;
+			item.vel.right -=  VELMIN;
+			double* curr_r = &reward[item.loc.x][item.loc.y][item.vel.up][item.vel.right];
+			int* curr_v = &visits[item.loc.x][item.loc.y][item.vel.up][item.vel.right];
+
+		sum += pow(lambda, (int) moveList.size()-1-i)*get_reward(i, moveList.size());
+		if(debug) cout<<"+ pow("<<lambda<<", "<<moveList.size()-1-i<<") * "<<get_reward(i, moveList.size())<<endl;
 		if(debug) {
 			cout<<"Updating..."<<endl;
 			cout<<"\tPosition:\t"<<item.loc.x<<", "<<item.loc.y<<endl;
 			cout<<"\tVelocity:\t"<<item.vel.up<<", "<<item.vel.right<<endl;
-			cout<<"\tReward:\t"<<
+			cout<<"\tReward:\t"<<item.reward<<endl;
+			cout<<"\tSum:\t\t"<<sum<<endl;
 			cout<<"\tFrom:\t\t"<<(*curr_r)<<" Visited: "<<(*curr_v)<<endl;
 		}
 		visits[item.loc.x][item.loc.y][item.vel.up][item.vel.right] = (*curr_v)+1;
-		reward[item.loc.x][item.loc.y][item.vel.up][item.vel.right] = (*curr_r) + 1/((double) (*curr_v))*((double) total_reward + item.reward - (*curr_r));		
+		reward[item.loc.x][item.loc.y][item.vel.up][item.vel.right] = (*curr_r) + 1/((double) (*curr_v))*(sum - (*curr_r));		
 		if(debug) {
 			cout<<"\tTo:\t\t"<<(*curr_r)<<" Visited: "<<(*curr_v)<<endl;
 		}
@@ -212,4 +228,20 @@ double Reinforce::get_median( vector<int> array ) {
 	else
 		median_item = ((double) array[array.size()/2] + (double) array[array.size()/2 - 1])/2.0;
 	return median_item;
+}
+
+double Reinforce::get_reward(int time, int n) {
+	vector<Identity> moves = game->Moves();
+	int sum = 0;
+	Identity item;
+	int i = time;
+	for(; i<n+time && i<(int) moves.size(); i++ ) {
+		item = moves[0];
+		sum += pow(lambda, i) * item.reward;
+	}
+	if(i<(int) moves.size()) {
+		item = moves[i];
+		sum += pow(lambda, i) * get_reward(i, moves.size());
+	}
+	return (double) sum;
 }

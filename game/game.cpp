@@ -47,6 +47,7 @@ void Game::Reset() {
 	uVel = 0;
 	rVel = 0;
 	status = true;
+	moveList.clear();
 }
 
 void Game::Print() {
