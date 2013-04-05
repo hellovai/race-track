@@ -174,8 +174,8 @@ void simulate(Reinforce* agent, int counter) {
 	}
 	double std = sqrt(accum/rewards.size());
 	
-	cout<<"Counter: "<<counter<<endl;
-	cout<<"Scale: "<<scale<<" Mean: "<<m<<" STD: "<<std<<endl;
+	//cout<<"Counter: "<<counter<<endl;
+	//cout<<"Scale: "<<scale<<" Mean: "<<m<<" STD: "<<std<<endl;
 	if(!debug) {
 	//	agent->Log(filestart, counter, m, mini, maxi, std, ep);
 		agent->Log(filestart, counter, rewards, mini, maxi, m);

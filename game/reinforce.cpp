@@ -232,15 +232,12 @@ double Reinforce::get_median( vector<int> array ) {
 
 double Reinforce::get_reward(int time, int n) {
 	vector<Identity> moves = game->Moves();
-	int sum = 0;
-	Identity item;
 	int i = time;
-	for(; i<n+time && i<(int) moves.size(); i++ ) {
-		item = moves[0];
-		sum += pow(lambda, i) * item.reward;
+	int sum = moves[i].reward; 
+	for(i=i+1; i<n+time && i<(int) moves.size(); i++ ) {
+		sum += pow(lambda, i) * moves[i].reward;
 	}
 	if(i<(int) moves.size()) {
-		item = moves[i];
 		sum += pow(lambda, i) * get_reward(i, moves.size());
 	}
 	return (double) sum;

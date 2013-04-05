@@ -6,6 +6,6 @@ set grid
 set xrange [0:1000]
 set style data lines
 set autoscale y
-plot "./basic.log" using 1:4:3:7:6 with candlesticks lc rgb "blue" title "General Data" whiskerbars 0.5, "" using 1:5:5:5:5 with candlesticks lw 2 lt -1 title "Median", "" using 1:9 title "Mean" lc rgb "red", "" using 1:2 title "Worst Case", "" using 1:8 title "Best Case" lw 2
+plot "./race.log" using 1:4:3:7:6 with candlesticks lc rgb "blue" title "General Data" whiskerbars 0.5, "" using 1:5:5:5:5 with candlesticks lw 2 lt -1 title "Median", "" using 1:9 title "Mean" lc rgb "red", "" using 1:2 title "Worst Case", "" using 1:8 title "Best Case" lw 2
 
 #
