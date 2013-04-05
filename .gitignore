@@ -1,0 +1,9 @@
+race-track
+
+# log stuff
+log*
+*.log
+
+# results
+*.jpg
+results/*
