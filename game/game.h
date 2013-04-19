@@ -49,11 +49,12 @@ class Game {
         //return functions
 		bool Status() { return status; };
 		int Reward() { return reward; };
-		Coor Position() { return coor; }
+		Coor Position() { return coor; };
 		Vel Velocity() {Vel temp; temp.up = uVel; temp.right = rVel; return temp; };
-		int Height() { return height; }
-		int Width() { return width; }
-		vector<Identity> Moves() { return moveList; }
+		int Height() { return height; };
+		int Width() { return width; };
+		vector<Identity> Moves() { return moveList; };
+		int Track( int i, int j ) { return track[i][j]; };
 };
 
 //=================================

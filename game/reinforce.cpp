@@ -141,6 +141,53 @@ void Reinforce::Epsilon( int gameCounter ) {
 		cout<<"Epsilon is: "<<e<<endl;
 }
 
+void Reinforce::DumpPolicy() {
+	Game * curr_game = game;
+	int **upPref, **rightPref;
+	upPref = new int*[curr_game->Width()];
+	rightPref = new int*[curr_game->Width()];
+	for( int x = 0; x < curr_game->Width(); x++ ) {
+		upPref[x] = new int[curr_game->Height()];
+		rightPref[x] = new int[curr_game->Height()];
+		for( int y = 0; y < curr_game->Height(); y++ ) {
+			if(curr_game->Track(x,y) != 0) {
+				upPref[x][y] = -1;
+				rightPref[x][y] = -1;
+			} else {
+				game->setPosition();
+			}
+		}
+	}
+	cout<<"Up Policy"<<endl;
+
+	for(int i=0; i < curr_game->Width(); i++) {
+		for( int j=0; j < curr_game->Height(); j++) {
+			if (upPref[i][j] == -1)
+				cout<<"|";
+			else if (upPref[i][j] < 0)
+				cout<<"\033[1;31m"<<upPref[i][j]*-1<<"\033[0m";
+			else 
+				cout<<upPref[i][j];
+			cout<<" ";
+		}
+		cout<<endl;
+	}
+	cout<<"Right Policy"<<endl;
+
+	for(int i=0; i < curr_game->Width(); i++) {
+		for( int j=0; j < curr_game->Height(); j++) {
+			if (rightPref[i][j] == -1)
+				cout<<"|";
+			else if (rightPref[i][j] < 0)
+				cout<<"\033[1;31m"<<rightPref[i][j]*-1<<"\033[0m";
+			else 
+				cout<<rightPref[i][j];
+			cout<<" ";
+		}
+		cout<<endl;
+	}
+}
+
 //Private Functions
 Vel Reinforce::Exploit( ) {
 	if(debug)

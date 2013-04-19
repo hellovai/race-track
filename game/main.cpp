@@ -136,7 +136,11 @@ int main(int argc, char* argv[]) {
 			simulate(&agent, i);
 			agent.Change_game(&game);
 		}
+		if(!debug && i/10 ) {
+
+		}
 	}
+	agent.DumpPolicy();
 	return 0;
 }
 

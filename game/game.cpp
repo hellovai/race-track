@@ -88,6 +88,8 @@ int Game::Move(int up, int right) {
 	if(res == -5) {
 		reward -= 4;
 		item.reward -= 4;
+		uVel = 0;
+		rVel = 0;
 	}
 	
 	if(res == -2)
