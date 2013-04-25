@@ -77,7 +77,6 @@ int Game::Move(int up, int right) {
 	item.loc = coor;
 	item.vel.up = uVel;
 	item.vel.right = rVel;
-	
 	int res = processMove();
 	//always lose 1 for making a move
 	reward -= 1;
@@ -86,16 +85,18 @@ int Game::Move(int up, int right) {
 	
 	//lose additional 4 for crashing
 	if(res == -5) {
-		reward -= 4;
-		item.reward -= 4;
-		uVel = 0;
-		rVel = 0;
+		reward -= 99;
+		item.reward -= 99;
+//		uVel = 0;
+//		rVel = 0;
 	}
 	
 	if(res == -2)
 		status = false;
-	
+	if((int) moveList.size() > 200 && status)
+		item.reward -= 10000;
 	moveList.push_back(item);
+	
 	return res;
 }
 

@@ -142,26 +142,66 @@ void Reinforce::Epsilon( int gameCounter ) {
 }
 
 void Reinforce::DumpPolicy() {
-	Game * curr_game = game;
 	int **upPref, **rightPref;
-	upPref = new int*[curr_game->Width()];
-	rightPref = new int*[curr_game->Width()];
-	for( int x = 0; x < curr_game->Width(); x++ ) {
-		upPref[x] = new int[curr_game->Height()];
-		rightPref[x] = new int[curr_game->Height()];
-		for( int y = 0; y < curr_game->Height(); y++ ) {
-			if(curr_game->Track(x,y) != 0) {
-				upPref[x][y] = -1;
-				rightPref[x][y] = -1;
-			} else {
-				game->setPosition();
+	upPref = new int*[game->Width()];
+	rightPref = new int*[game->Width()];
+	for( int x = 0; x < game->Width(); x++ ) {
+		upPref[x] = new int[game->Height()];
+		rightPref[x] = new int[game->Height()];
+	for( int y = 0; y < game->Height(); y++ ) 
+	{
+		if(game->Track(x,y) != 0) {
+			upPref[x][y] = -1;
+			rightPref[x][y] = -1;
+		} else {
+			double **curr_reward = reward[x][y];
+			double uMax[VELMAX-VELMIN+1] = {0};
+			double rMax[VELMAX-VELMIN+1] = {0};
+			for (int i = 0; i < VELMAX-VELMIN; ++i) {
+				uMax[i] = curr_reward[i][0];
+				rMax[i] = curr_reward[0][i];
+				for (int j = 1; j < VELMAX-VELMIN; ++j)
+				{
+					if(uMax[i] <= curr_reward[i][j])
+						uMax[i] = curr_reward[i][j];
+					if(rMax[i] <= curr_reward[j][i])
+						rMax[i] = curr_reward[j][i];
+				}
 			}
+			vector<int> indexr, indexu;
+			indexu.push_back(0);
+			indexr.push_back(0);
+			for (int i = 1; i < VELMAX-VELMIN; ++i)
+			{
+				if(rMax[indexr[0]] < rMax[i]) {
+					indexr.clear();
+					indexr.push_back(i);
+				} else if (rMax[indexr[0]] == rMax[i]) {
+					indexr.push_back(i);
+				}
+				if(uMax[indexu[0]] < uMax[i]) {
+					indexu.clear();
+					indexu.push_back(i);
+				} else if (uMax[indexu[0]] == uMax[i]) {
+					indexu.push_back(i);
+				}
+			}
+			if(indexu.size() == 1)
+			upPref[x][y] = indexu[0];
+			else
+			upPref[x][y] = -indexu.size();
+			if(indexr.size() == 1)
+			rightPref[x][y] = indexr[0];
+			else
+			rightPref[x][y] = -indexr.size();
 		}
 	}
-	cout<<"Up Policy"<<endl;
+	}
+	
 
-	for(int i=0; i < curr_game->Width(); i++) {
-		for( int j=0; j < curr_game->Height(); j++) {
+	cout<<"Up Policy"<<endl;
+	for(int i=0; i < game->Width(); i++) {
+		for( int j=0; j < game->Height(); j++) {
 			if (upPref[i][j] == -1)
 				cout<<"|";
 			else if (upPref[i][j] < 0)
@@ -173,9 +213,8 @@ void Reinforce::DumpPolicy() {
 		cout<<endl;
 	}
 	cout<<"Right Policy"<<endl;
-
-	for(int i=0; i < curr_game->Width(); i++) {
-		for( int j=0; j < curr_game->Height(); j++) {
+	for(int i=0; i < game->Width(); i++) {
+		for( int j=0; j < game->Height(); j++) {
 			if (rightPref[i][j] == -1)
 				cout<<"|";
 			else if (rightPref[i][j] < 0)

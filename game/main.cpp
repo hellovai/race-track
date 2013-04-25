@@ -99,6 +99,7 @@ int main(int argc, char* argv[]) {
 	agent.Change_game(&game);
 	
 	for(int i=0; i<gameCounter; i++) {
+		cout<<"Running Trial: "<<i<<endl;
 		game.Reset();
 		while(game.Status()) {
             bool print = false;
