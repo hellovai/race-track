@@ -150,7 +150,7 @@ void Reinforce::DumpPolicy() {
 		rightPref[x] = new int[game->Height()];
 	for( int y = 0; y < game->Height(); y++ ) 
 	{
-		if(game->Track(x,y) != 0) {
+		if(game->Track(x,y) != 0 && game->Track(x,y) != -1) {
 			upPref[x][y] = -1;
 			rightPref[x][y] = -1;
 		} else {
@@ -197,7 +197,6 @@ void Reinforce::DumpPolicy() {
 		}
 	}
 	}
-	
 
 	cout<<"Up Policy"<<endl;
 	for(int i=0; i < game->Width(); i++) {
@@ -225,6 +224,15 @@ void Reinforce::DumpPolicy() {
 		}
 		cout<<endl;
 	}
+
+	ofstream fout;
+	fout.open("test.tsv");
+	for(int i=0; i < game->Width(); i++)
+		for( int j=0; j < game->Height(); j++)
+			if(game->Track(i,j) != -5)
+				fout<<i<<" "<<j<<" "<<(upPref[i][j] < 0 ? -2 : upPref[i][j])<<endl;
+			else
+				fout<<i<<" "<<j<<" NaN"<<endl;
 }
 
 //Private Functions
