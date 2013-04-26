@@ -46,7 +46,7 @@ class Reinforce {
 		void ChangeEpsilon( double x ) { e = x; }
 		void setDebug(bool debg ) { debug = debg; }
 		void setLambda(double number ) { lambda = number; }
-		void DumpPolicy();
+		void DumpPolicy(string);
 };
 
 //=================================

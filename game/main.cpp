@@ -32,7 +32,8 @@ int main(int argc, char* argv[]) {
 	double qVal = 0.0;
 	int GAMEPRINT = 5;
 	double lambda = 1;
-	
+	string dumpfile = "data";
+
 	int argCounter = 1;  //to account for starting filename that it counts
 	argc -= 1;
 	while(argc > 0) {
@@ -44,6 +45,8 @@ int main(int argc, char* argv[]) {
 		
 		if ( key.compare("-f") == 0 )
 			filestart=argv[argCounter++];
+		else if ( key.compare("-d") == 0 )
+			dumpfile=argv[argCounter++];
 		else if ( key.compare("-e") == 0 )
 			epsilon = atof(argv[argCounter++]);
 		else if ( key.compare("-q") == 0 )
@@ -99,7 +102,7 @@ int main(int argc, char* argv[]) {
 	agent.Change_game(&game);
 	
 	for(int i=0; i<gameCounter; i++) {
-		cout<<"Running Trial: "<<i<<endl;
+		//cout<<"Running Trial: "<<i<<endl;
 		game.Reset();
 		while(game.Status()) {
             bool print = false;
@@ -141,7 +144,7 @@ int main(int argc, char* argv[]) {
 
 		}
 	}
-	agent.DumpPolicy();
+	agent.DumpPolicy(dumpfile);
 	return 0;
 }
 

@@ -83,12 +83,10 @@ int Game::Move(int up, int right) {
 	
 	item.reward = -1;
 	
-	//lose additional 4 for crashing
+	//lose additional 99 for crashing
 	if(res == -5) {
 		reward -= 99;
 		item.reward -= 99;
-//		uVel = 0;
-//		rVel = 0;
 	}
 	
 	if(res == -2)

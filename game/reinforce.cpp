@@ -141,7 +141,7 @@ void Reinforce::Epsilon( int gameCounter ) {
 		cout<<"Epsilon is: "<<e<<endl;
 }
 
-void Reinforce::DumpPolicy() {
+void Reinforce::DumpPolicy(string name) {
 	int **upPref, **rightPref;
 	upPref = new int*[game->Width()];
 	rightPref = new int*[game->Width()];
@@ -198,41 +198,71 @@ void Reinforce::DumpPolicy() {
 	}
 	}
 
-	cout<<"Up Policy"<<endl;
-	for(int i=0; i < game->Width(); i++) {
-		for( int j=0; j < game->Height(); j++) {
-			if (upPref[i][j] == -1)
-				cout<<"|";
-			else if (upPref[i][j] < 0)
-				cout<<"\033[1;31m"<<upPref[i][j]*-1<<"\033[0m";
-			else 
-				cout<<upPref[i][j];
-			cout<<" ";
-		}
-		cout<<endl;
-	}
-	cout<<"Right Policy"<<endl;
-	for(int i=0; i < game->Width(); i++) {
-		for( int j=0; j < game->Height(); j++) {
-			if (rightPref[i][j] == -1)
-				cout<<"|";
-			else if (rightPref[i][j] < 0)
-				cout<<"\033[1;31m"<<rightPref[i][j]*-1<<"\033[0m";
-			else 
-				cout<<rightPref[i][j];
-			cout<<" ";
-		}
-		cout<<endl;
-	}
-
 	ofstream fout;
-	fout.open("test.tsv");
-	for(int i=0; i < game->Width(); i++)
-		for( int j=0; j < game->Height(); j++)
-			if(game->Track(i,j) != -5)
-				fout<<i<<" "<<j<<" "<<(upPref[i][j] < 0 ? -2 : upPref[i][j])<<endl;
-			else
-				fout<<i<<" "<<j<<" NaN"<<endl;
+	string x = name;
+	x.append("-policy.tsv");
+	fout.open(x.c_str());
+	fout<<"Up Policy"<<endl;
+	for(int i=0; i < game->Width(); i++) {
+		for( int j=0; j < game->Height(); j++) {
+			if(game->Track(i,j) == -1)
+				fout<<"C";
+			else if(game->Track(i,j) == -2)
+				fout<<"F";
+			else if (upPref[i][j] == -1)
+				fout<<"|";
+			else if (upPref[i][j] < 0)
+				fout<<"\033[1;31m"<<upPref[i][j]*-1<<"\033[0m";
+			else 
+				fout<<upPref[i][j];
+			fout<<" ";
+		}
+		fout<<endl;
+	}
+	fout<<"Right Policy"<<endl;
+	for(int i=0; i < game->Width(); i++) {
+		for( int j=0; j < game->Height(); j++) {
+			if(game->Track(i,j) == -1)
+				fout<<"C";
+			else if(game->Track(i,j) == -2)
+				fout<<"F";
+			else if (rightPref[i][j] == -1)
+				fout<<"|";
+			else if (rightPref[i][j] < 0)
+				fout<<"\033[1;31m"<<rightPref[i][j]*-1<<"\033[0m";
+			else 
+				fout<<rightPref[i][j];
+			fout<<" ";
+		}
+		fout<<endl;
+	}
+	fout.close();
+
+	// for(int i=0; i < game->Width(); i++) {
+	// 	for( int j=0; j < game->Height(); j++)
+	// 		if(game->Track(i,j) == -1 || game->Track(i,j) == -2)
+	// 			fout<<i<<" "<<j<<" "<<VELMAX+1<<endl;
+	// 		else if(game->Track(i,j) == 0)
+	// 			fout<<i<<" "<<j<<" "<<(upPref[i][j] < 0 ? -1 : upPref[i][j])<<endl;
+	// 		else
+	// 			fout<<i<<" "<<j<<" -1"<<endl;
+	// 	fout<<endl;
+	// }
+	// fout.close();
+	// x = name;
+	// x.append("-right.tsv");
+	// fout.open(x.c_str());
+	// for(int i=0; i < game->Width(); i++) {
+	// 	for( int j=0; j < game->Height(); j++)
+	// 		if(game->Track(i,j) == -1 || game->Track(i,j) == -2)
+	// 			fout<<i<<" "<<j<<" "<<VELMAX+1<<endl;
+	// 		else if(game->Track(i,j) == 0)
+	// 			fout<<i<<" "<<j<<" "<<(rightPref[i][j] < 0 ? -1 : rightPref[i][j])<<endl;
+	// 		else
+	// 			fout<<i<<" "<<j<<" -1"<<endl;
+	// 	fout<<endl;
+	// }
+	// fout.close();
 }
 
 //Private Functions
