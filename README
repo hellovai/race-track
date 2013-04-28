@@ -1,4 +1,4 @@
-The goal of this game is to move the car from S to F. "." are valid road spaces. Every move is -1. Going off road is -5, and you will ricochet off on the road depending on how you hit the road.
+The goal of this game is to move the car from S to F. "." are valid road spaces. Every move is -1. Going off road is -100, and you will ricochet off on the road depending on how you hit the road.
 
 in the main directory run:
 	cd game/
@@ -15,9 +15,10 @@ arguements
 	-off ---------------------------- disables halfstep
 	-debug -------------------------- displays all actions, rewards, and decisions per timestep
 	-h ------------------------------ displays usage
+	-d string ----------------------- dumpfile
 	
 	defaults are as such
-	./race-track -f filename -e 0 -q 0 -p 5 -g 10000
+	./race-track -f filename -e 0 -q 0 -p 5 -g 10000 -d data
 	
 		create a track based on "filename.dat"
 		e = 0

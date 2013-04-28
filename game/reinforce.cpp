@@ -157,21 +157,23 @@ void Reinforce::DumpPolicy(string name) {
 			double **curr_reward = reward[x][y];
 			double uMax[VELMAX-VELMIN+1] = {0};
 			double rMax[VELMAX-VELMIN+1] = {0};
-			for (int i = 0; i < VELMAX-VELMIN; ++i) {
-				uMax[i] = curr_reward[i][0];
-				rMax[i] = curr_reward[0][i];
-				for (int j = 1; j < VELMAX-VELMIN; ++j)
+			for (int i = 0; i < 1+VELMAX-VELMIN; ++i) {
+					uMax[i] = -1000;
+					rMax[i] = -1000;
+				for (int j = 0; j < 1+VELMAX-VELMIN; ++j)
 				{
-					if(uMax[i] <= curr_reward[i][j])
-						uMax[i] = curr_reward[i][j];
-					if(rMax[i] <= curr_reward[j][i])
-						rMax[i] = curr_reward[j][i];
+					if(curr_reward[i][j] != 0)
+						if(uMax[i] <= curr_reward[i][j])
+							uMax[i] = curr_reward[i][j];
+					if(curr_reward[j][i] != 0)
+						if(rMax[i] <= curr_reward[j][i])
+							rMax[i] = curr_reward[j][i];
 				}
 			}
 			vector<int> indexr, indexu;
 			indexu.push_back(0);
 			indexr.push_back(0);
-			for (int i = 1; i < VELMAX-VELMIN; ++i)
+			for (int i = 1; i < 1+VELMAX-VELMIN; ++i)
 			{
 				if(rMax[indexr[0]] < rMax[i]) {
 					indexr.clear();
@@ -187,11 +189,11 @@ void Reinforce::DumpPolicy(string name) {
 				}
 			}
 			if(indexu.size() == 1)
-			upPref[x][y] = indexu[0];
+			upPref[x][y] = (indexu[0] == -1000 ? -(1+VELMAX-VELMIN) : indexu[0]);
 			else
 			upPref[x][y] = -indexu.size();
 			if(indexr.size() == 1)
-			rightPref[x][y] = indexr[0];
+			rightPref[x][y] = (indexr[0] == -1000 ? -(1+VELMAX-VELMIN) : indexr[0]);
 			else
 			rightPref[x][y] = -indexr.size();
 		}

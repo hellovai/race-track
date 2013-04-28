@@ -1,11 +1,15 @@
-#!/usr/bin/gnuplot
 reset
+set term postscript
+set output "./results/graphs/diag-0.ps"
+
 set xdata
 set key reverse Left outside
 set grid
+set title 'Track: diag Lambda: 0'
+set ylabel 'Score'
+set xlabel 'Number of training sessions'
 set xrange [0:1000]
 set style data lines
 set autoscale y
-plot "./race.log" using 1:4:3:7:6 with candlesticks lc rgb "blue" title "General Data" whiskerbars 0.5, "" using 1:5:5:5:5 with candlesticks lw 2 lt -1 title "Median", "" using 1:9 title "Mean" lc rgb "red", "" using 1:2 title "Worst Case", "" using 1:8 title "Best Case" lw 2
-
-#
+#set yrange [-40:0]
+plot "./results/diag-0.log" using 1:4:3:7:6 with candlesticks lc rgb "blue" title "General Data" whiskerbars 0.5, "" using 1:5:5:5:5 with candlesticks lw 2 lt -1 title "Median", "" using 1:9 title "Mean" lc rgb "red", "" using 1:2 title "Worst Case", "" using 1:8 lc rgb "green" title "Best Case"
