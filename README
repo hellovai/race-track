@@ -1,3 +1,7 @@
+
+I highly recommend you use the script.sh file to run it. Simply change the contents of the array and your data will be outputed to the results directory. To view the time graph, you will have to manually copy and paste the tiem data for each respective run
+
+
 The goal of this game is to move the car from S to F. "." are valid road spaces. Every move is -1. Going off road is -100, and you will ricochet off on the road depending on how you hit the road.
 
 in the main directory run:

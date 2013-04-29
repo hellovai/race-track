@@ -1,0 +1,5 @@
+#!/bin/bash
+track=$1
+lambda=$2
+
+cat ./results/$track-$lambda-policy.tsv
